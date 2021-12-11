@@ -3,10 +3,10 @@ package com.github.imthenico.simplecommons.data.repository.service;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.data.db.sql.query.QueryProcessor;
 import com.github.imthenico.simplecommons.data.repository.GenericMapper;
-import com.github.imthenico.simplecommons.data.repository.Response;
 import com.github.imthenico.simplecommons.util.Validate;
 
 import java.sql.Connection;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractSQLSavingService<T> implements SavingService<T> {
 
@@ -27,7 +27,7 @@ public abstract class AbstractSQLSavingService<T> implements SavingService<T> {
     }
 
     @Override
-    public Response<?> asyncSave(T obj, String key) {
+    public CompletableFuture<?> asyncSave(T obj, String key) {
         return null;
     }
 }

@@ -1,16 +1,15 @@
 package com.github.imthenico.simplecommons.data.repository.service;
 
-import com.github.imthenico.simplecommons.data.repository.Response;
-
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public interface FindService<T> {
 
-    Response<T> asyncFind(String key);
+    CompletableFuture<T> asyncFind(String key);
 
-    Response<Set<T>> asyncAllCollection();
+    CompletableFuture<Set<T>> asyncAllCollection();
 
-    Response<Set<String>> asyncKeyCollection();
+    CompletableFuture<Set<String>> asyncKeyCollection();
 
     T usingId(String key);
 

@@ -1,10 +1,10 @@
 package com.github.imthenico.simplecommons.data.repository.service;
 
-import com.github.imthenico.simplecommons.data.repository.Response;
+import java.util.concurrent.CompletableFuture;
 
 public interface DeletionService {
 
-    Response<?> asyncDelete(String key);
+    CompletableFuture<?> asyncDelete(String key);
 
     void delete(String key);
 
