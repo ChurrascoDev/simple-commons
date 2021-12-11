@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 public class SQLRepository<T> extends AbstractRepository<T> {
 
@@ -24,7 +23,6 @@ public class SQLRepository<T> extends AbstractRepository<T> {
     private final GenericMapper<?> mapper;
 
     public SQLRepository(
-            Consumer<Throwable> exceptionHandler,
             Executor taskProcessor,
             Class<T> modelClass,
             GenericMapper<?> mapper,
@@ -47,63 +45,55 @@ public class SQLRepository<T> extends AbstractRepository<T> {
             Connection connection,
             SQLTableModel sqlTableModel
     ) {
-       this(null, taskProcessor, modelClass, genericMapper, connection, sqlTableModel, new MySQLSavingService<>());
+       this(taskProcessor, modelClass, genericMapper, connection, sqlTableModel, new MySQLSavingService<>());
     }
 
     @Override
-    public Response<?> save(T obj, String key) {
-        return run(() -> delegatedSaving.save(obj, key));
+    public void save(T obj, String key) {
+        delegatedSaving.save(obj, key);
     }
 
     @Override
-    public Response<?> delete(String key) {
-        return run(() -> processor.newBinder("DELETE * FROM <table> WHERE(<p>)")
+    public void delete(String key) {
+        processor.newBinder("DELETE * FROM <table> WHERE(<p>)")
                 .parameters(sqlTableModel.getPrimaryColumn().toParameter())
                 .bindValue(key)
-                .update()
-
-        );
+                .update();
     }
 
     @Override
-    public Response<T> usingId(String key) {
-        return supply(() -> {
-            QueryResult result = processor.newBinder("SELECT * FROM <table> WHERE(<p>)")
-                    .parameters(sqlTableModel.getPrimaryColumn().toParameter())
-                    .bindValue(key)
-                    .query();
+    public T usingId(String key) {
+        QueryResult result = processor.newBinder("SELECT * FROM <table> WHERE(<p>)")
+                .parameters(sqlTableModel.getPrimaryColumn().toParameter())
+                .bindValue(key)
+                .query();
 
-            return mapper.mapFields(result.getRow(key), modelClass);
-        });
+        return mapper.mapFields(result.getRow(key), modelClass);
     }
 
     @Override
-    public Response<Set<T>> all() {
-        return supply(() -> {
-            Set<T> all = new HashSet<>();
+    public Set<T> all() {
+         Set<T> all = new HashSet<>();
 
-            QueryResult result = processor
-                    .newBinder("SELECT * FROM <table>")
-                    .query();
+         QueryResult result = processor
+                 .newBinder("SELECT * FROM <table>")
+                 .query();
 
-            for (Map<String, BasicTypeObject> basicObjectTypeMap : result) {
-                all.add(mapper.mapFields(basicObjectTypeMap, modelClass));
-            }
+         for (Map<String, BasicTypeObject> basicObjectTypeMap : result) {
+             all.add(mapper.mapFields(basicObjectTypeMap, modelClass));
+         }
 
-            return all;
-        });
+         return all;
     }
 
     @Override
-    public Response<Set<String>> keys() {
-        return supply(() -> {
-            QueryResult result = processor
-                    .newBinder("SELECT <n> FROM <table>")
-                    .bindString("<n>", sqlTableModel.getPrimaryColumn().getName())
-                    .query();
+    public Set<String> keys() {
+        QueryResult result = processor
+                .newBinder("SELECT <n> FROM <table>")
+                .bindString("<n>", sqlTableModel.getPrimaryColumn().getName())
+                .query();
 
-            return new HashSet<>(result.getAllIdentifiers());
-        });
+        return new HashSet<>(result.getAllIdentifiers());
     }
 
     public QueryProcessor getProcessor() {

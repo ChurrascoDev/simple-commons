@@ -6,10 +6,16 @@ import java.util.Set;
 
 public interface FindService<T> {
 
-    Response<T> usingId(String key);
+    Response<T> asyncFind(String key);
 
-    Response<Set<T>> all();
+    Response<Set<T>> asyncAllCollection();
 
-    Response<Set<String>> keys();
+    Response<Set<String>> asyncKeyCollection();
+
+    T usingId(String key);
+
+    Set<T> all();
+
+    Set<String> keys();
 
 }

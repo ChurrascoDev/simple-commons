@@ -1,7 +1,6 @@
 package com.github.imthenico.simplecommons.data.db.sql.connector;
 
 import com.github.imthenico.simplecommons.data.db.Connector;
-import com.github.imthenico.simplecommons.data.db.UserCredential;
 import com.github.imthenico.simplecommons.util.Pair;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

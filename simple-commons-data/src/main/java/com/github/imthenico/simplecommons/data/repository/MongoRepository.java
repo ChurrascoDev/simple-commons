@@ -34,66 +34,56 @@ public class MongoRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public Response<?> delete(String key) {
-        return run(() -> {
-            BasicDBObject bson = new BasicDBObject("_id", key);
-            DeleteResult deleteResult = collection.deleteOne(bson);
+    public void save(T obj, String key) {
+        try {
+            Map<String, Object> fields = mapper.serializeFields(obj);
 
-            if (deleteResult.getDeletedCount() <= 0) {
-                REPOSITORY_LOGGER.log(Level.WARNING, String.format("unable to delete: no registry found ('%s')", key));
-            }
-        });
+            collection.replaceOne(Filters.eq("_id", key), new Document(fields), new ReplaceOptions().upsert(true));
+        } catch (SerializationException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public Response<T> usingId(String key) {
-        return supply(() -> {
-            Document result = collection.find(new BasicDBObject("_id", key)).first();
+    public void delete(String key) {
+        BasicDBObject bson = new BasicDBObject("_id", key);
+        DeleteResult deleteResult = collection.deleteOne(bson);
 
-            if (result == null)
-                return null;
-
-            return mapper.map(result.toJson(), modelClass);
-        });
+        if (deleteResult.getDeletedCount() <= 0) {
+            REPOSITORY_LOGGER.log(Level.WARNING, String.format("unable to delete: no registry found ('%s')", key));
+        }
     }
 
     @Override
-    public Response<Set<T>> all(){
-        return supply(() -> {
-            Set<T> collected = new HashSet<>();
-            FindIterable<Document> allResults = collection.find();
+    public T usingId(String key) {
+        Document result = collection.find(new BasicDBObject("_id", key)).first();
 
-            for (Document document : allResults) {
-                collected.add(mapper.map(document.toJson(), modelClass));
-            }
+        if (result == null)
+            return null;
 
-            return collected;
-        });
+        return mapper.map(result.toJson(), modelClass);
     }
 
     @Override
-    public Response<Set<String>> keys() {
-        return supply(() -> {
-            Set<String> keys = new HashSet<>();
+    public Set<T> all(){
+        Set<T> collected = new HashSet<>();
+        FindIterable<Document> allResults = collection.find();
 
-            for (Document document : collection.find().projection(Projections.include("_id"))) {
-                keys.add(document.get("_id").toString());
-            }
+        for (Document document : allResults) {
+            collected.add(mapper.map(document.toJson(), modelClass));
+        }
 
-            return keys;
-        });
+        return collected;
     }
 
     @Override
-    public Response<?> save(T obj, String key) {
-        return run(() -> {
-            try {
-                Map<String, Object> fields = mapper.serializeFields(obj);
+    public Set<String> keys() {
+        Set<String> keys = new HashSet<>();
 
-                collection.replaceOne(Filters.eq("_id", key), new Document(fields), new ReplaceOptions().upsert(true));
-            } catch (SerializationException e) {
-                e.printStackTrace();
-            }
-        });
+        for (Document document : collection.find().projection(Projections.include("_id"))) {
+            keys.add(document.get("_id").toString());
+        }
+
+        return keys;
     }
 }

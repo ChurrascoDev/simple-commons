@@ -3,7 +3,6 @@ package com.github.imthenico.simplecommons.data.db.sql.query;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.iterator.UnmodifiableIterator;
 import com.github.imthenico.simplecommons.object.BasicTypeObject;
-import com.google.gson.JsonPrimitive;
 
 import java.sql.Array;
 import java.sql.ResultSet;

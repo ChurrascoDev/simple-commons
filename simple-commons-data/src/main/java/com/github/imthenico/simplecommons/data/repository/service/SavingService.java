@@ -4,6 +4,8 @@ import com.github.imthenico.simplecommons.data.repository.Response;
 
 public interface SavingService<T> {
 
-    Response<?> save(T obj, String key);
+    Response<?> asyncSave(T obj, String key);
+
+    void save(T obj, String key);
 
 }

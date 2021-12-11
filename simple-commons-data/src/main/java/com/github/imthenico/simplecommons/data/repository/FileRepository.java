@@ -41,70 +41,63 @@ public class FileRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public Response<?> save(T obj, String key) {
+    public void save(T obj, String key) {
         File found = findFile(key, true);
 
         try {
             String content = mapper.serialize(obj);
-            return run(() -> {
-                try {
-                    write(found, content);
-                } catch (WriteException e) {
-                    e.printStackTrace();
-                }
-            });
+
+            try {
+                write(found, content);
+            } catch (WriteException e) {
+                e.printStackTrace();
+            }
         } catch (SerializationException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Response<?> delete(String id) {
-        return run(() -> {
-            File found = findFile(id, false);
+    public void delete(String id) {
+        File found = findFile(id, false);
 
-            if (!found.exists())
-                return;
+        if (!found.exists())
+            return;
 
-            if (!found.delete())
-                throw new UnsupportedOperationException(String.format("unable to delete file %s", id));
-        });
+        if (!found.delete())
+            throw new UnsupportedOperationException(String.format("unable to delete file %s", id));
     }
 
     @Override
-    public Response<T> usingId(String key) {
-        return supply(() -> {
-            File found = findFile(key, false);
+    public T usingId(String key) {
+        File found = findFile(key, false);
 
-            if (!found.exists())
-                return null;
+        if (!found.exists())
+            return null;
 
-            return map(found);
-        });
+        return map(found);
     }
 
     @Override
-    public Response<Set<T>> all() {
-        return supply(() -> {
-            Set<T> all = new HashSet<>();
+    public Set<T> all() {
+        Set<T> all = new HashSet<>();
 
-            forEachFile(folder, file -> {
-                if (file.isFile()) {
-                    all.add(map(file));
-                }
-            });
-
-            return all;
+        forEachFile(folder, file -> {
+            if (file.isFile()) {
+                all.add(map(file));
+            }
         });
+
+        return all;
     }
 
     @Override
-    public Response<Set<String>> keys() {
+    public Set<String> keys() {
         Set<String> all = new HashSet<>();
 
         forEachFile(folder, (file) -> all.add(file.getName()));
 
-        return Response.newResponse(() -> all, taskProcessor, Throwable::printStackTrace);
+        return all;
     }
 
     public File getFolder() {

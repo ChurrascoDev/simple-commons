@@ -4,6 +4,8 @@ import com.github.imthenico.simplecommons.data.repository.Response;
 
 public interface DeletionService {
 
-    Response<?> delete(String key);
+    Response<?> asyncDelete(String key);
+
+    void delete(String key);
 
 }
