@@ -50,4 +50,14 @@ public class UserCredential {
 
         return map;
     }
+
+    public static UserCredential ofMap(Map<String, Object> objectMap) {
+        return new UserCredential(
+                (String) objectMap.get("userName"),
+                (String) objectMap.get("password"),
+                (String) objectMap.get("ip"),
+                (String) objectMap.get("port"),
+                (String) objectMap.get("database")
+        );
+    }
 }
