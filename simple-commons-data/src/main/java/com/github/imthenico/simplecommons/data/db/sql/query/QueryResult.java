@@ -1,5 +1,6 @@
 package com.github.imthenico.simplecommons.data.db.sql.query;
 
+import com.github.imthenico.simplecommons.data.db.sql.model.Constraint;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.iterator.UnmodifiableIterator;
 import com.github.imthenico.simplecommons.object.BasicTypeObject;
@@ -25,7 +26,7 @@ public class QueryResult implements Iterable<Map<String, BasicTypeObject>>{
 
         ResultSetMetaData metaData = resultSet.getMetaData();
         while (resultSet.next()) {
-            String id = resultSet.getObject(sqlTableModel.getPrimaryColumn().getName()).toString();
+            String id = resultSet.getObject(sqlTableModel.filterByConstraint(Constraint.PRIMARY).getName()).toString();
             Map<String, BasicTypeObject> row = new HashMap<>();
 
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
