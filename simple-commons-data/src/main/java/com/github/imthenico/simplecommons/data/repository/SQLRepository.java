@@ -1,5 +1,6 @@
 package com.github.imthenico.simplecommons.data.repository;
 
+import com.github.imthenico.simplecommons.data.db.sql.model.Constraint;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.data.db.sql.query.QueryProcessor;
 import com.github.imthenico.simplecommons.data.db.sql.query.QueryResult;
@@ -56,7 +57,7 @@ public class SQLRepository<T> extends AbstractRepository<T> {
     @Override
     public void delete(String key) {
         processor.newBinder("DELETE * FROM <table> WHERE(<p>)")
-                .parameters(sqlTableModel.getPrimaryColumn().toParameter())
+                .parameters(sqlTableModel.filterByConstraint(Constraint.PRIMARY).toParameter())
                 .bindValue(key)
                 .update();
     }
@@ -64,7 +65,7 @@ public class SQLRepository<T> extends AbstractRepository<T> {
     @Override
     public T usingId(String key) {
         QueryResult result = processor.newBinder("SELECT * FROM <table> WHERE(<p>)")
-                .parameters(sqlTableModel.getPrimaryColumn().toParameter())
+                .parameters(sqlTableModel.filterByConstraint(Constraint.PRIMARY).toParameter())
                 .bindValue(key)
                 .query();
 
@@ -90,7 +91,7 @@ public class SQLRepository<T> extends AbstractRepository<T> {
     public Set<String> keys() {
         QueryResult result = processor
                 .newBinder("SELECT <n> FROM <table>")
-                .bindString("<n>", sqlTableModel.getPrimaryColumn().getName())
+                .bindString("<n>", sqlTableModel.filterByConstraint(Constraint.PRIMARY).getName())
                 .query();
 
         return new HashSet<>(result.getAllIdentifiers());
