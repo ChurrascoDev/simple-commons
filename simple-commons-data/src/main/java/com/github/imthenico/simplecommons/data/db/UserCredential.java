@@ -60,4 +60,12 @@ public class UserCredential {
                 (String) objectMap.get("database")
         );
     }
+
+    public String apply(String url) {
+        return url.replace("<userName>", userName)
+                .replace("<password>", password)
+                .replace("<ip>", ip)
+                .replace("<port>", port)
+                .replace("<database>", database);
+    }
 }
