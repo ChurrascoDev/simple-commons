@@ -3,29 +3,31 @@ package com.github.imthenico.simplecommons.data.db.sql.query;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.util.Validate;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryProcessor {
+
+    private final static Pattern PARAMETER_PATTERN = Pattern.compile("\\w+");
 
     private final Connection connection;
     private final SQLTableModel sqlTableModel;
 
     public QueryProcessor(Connection connection, SQLTableModel sqlTableModel) {
         this.connection = Validate.notNull(connection);
-        this.sqlTableModel = Validate.notNull(sqlTableModel);
+        this.sqlTableModel = sqlTableModel;
 
         try {
             getConnection();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public QueryProcessor(Connection connection) {
+        this(connection, null);
     }
 
     public boolean exists(String query) {
@@ -91,11 +93,12 @@ public class QueryProcessor {
 
     public class ExecutableValueBinder {
 
-        private final Map<Object, String> valuesToBind;
+        private final Map<Object, Object> valuesToBind;
         private final Connection connection;
         private final QueryProcessor queryProcessor;
 
         private String query;
+        private String parameters;
 
         public ExecutableValueBinder(String query, Connection connection, QueryProcessor queryProcessor) {
             this.connection = Validate.notNull(connection);
@@ -115,7 +118,7 @@ public class QueryProcessor {
         }
 
         public ExecutableValueBinder parameters(String parameters) {
-            this.query = query.replace("<p>", parameters);
+            this.parameters = Validate.notNull(parameters);
             return this;
         }
 
@@ -129,8 +132,8 @@ public class QueryProcessor {
             return parameters(builder.toString());
         }
 
-        public ExecutableValueBinder bindValue(String paramName, Object value) {
-            valuesToBind.put(value, paramName);
+        public ExecutableValueBinder bindValue(Object param, Object value) {
+            valuesToBind.put(value, param);
             return this;
         }
 
@@ -139,7 +142,7 @@ public class QueryProcessor {
             return this;
         }
 
-        public ExecutableValueBinder bindValues(Map<String, Object> objectMap) {
+        public ExecutableValueBinder bindValues(Map<Object, Object> objectMap) {
             objectMap.forEach((k, v) -> valuesToBind.put(v, k));
             return this;
         }
@@ -177,16 +180,37 @@ public class QueryProcessor {
         }
 
         private PreparedStatement prepareStatement() throws SQLException {
-            bindString("<table>", sqlTableModel.getName());
+            List<String> columnNames = new ArrayList<>();
 
-            List<String> columnNames = sqlTableModel.getColumnNames();
+            if (sqlTableModel != null) {
+                bindString("<table>", sqlTableModel.getName());
+                columnNames.addAll(sqlTableModel.getColumnNames());
+            }
+
+            if (parameters != null) {
+                query = query.replace("<p>", parameters);
+                Matcher matcher = PARAMETER_PATTERN.matcher(parameters);
+
+                columnNames.clear();
+                while (matcher.find()) {
+                    columnNames.add(matcher.group());
+                }
+            }
+
             PreparedStatement statement = connection.prepareStatement(query);
 
             int i = 1;
-            for (Map.Entry<Object, String> entry : valuesToBind.entrySet()) {
-                String paramName = entry.getValue();
+            for (Map.Entry<Object, Object> entry : valuesToBind.entrySet()) {
+                Object param = entry.getValue();
+                int paramIndex = i;
 
-                int paramIndex = paramName != null ? columnNames.indexOf(paramName) + 1 : i;
+                if (param instanceof String) {
+                    String paramName = (String) param;
+                    paramIndex = columnNames.indexOf(paramName) + 1;
+
+                } else if (param instanceof Integer) {
+                    paramIndex = (int) param;
+                }
 
                 statement.setObject(paramIndex, entry.getKey());
                 i++;
