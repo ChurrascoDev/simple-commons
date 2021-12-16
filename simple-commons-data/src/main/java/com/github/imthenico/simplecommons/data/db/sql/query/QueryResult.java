@@ -25,8 +25,16 @@ public class QueryResult implements Iterable<Map<String, BasicTypeObject>>{
         this.allResults = new HashMap<>();
 
         ResultSetMetaData metaData = resultSet.getMetaData();
+        int index = 0;
         while (resultSet.next()) {
-            String id = resultSet.getObject(sqlTableModel.filterByConstraint(Constraint.PRIMARY).getName()).toString();
+            String id;
+
+            if (sqlTableModel != null) {
+                id = resultSet.getObject(sqlTableModel.filterByConstraint(Constraint.PRIMARY).getName()).toString();
+            } else {
+                id = Objects.toString(index);
+            }
+
             Map<String, BasicTypeObject> row = new HashMap<>();
 
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
@@ -43,6 +51,8 @@ public class QueryResult implements Iterable<Map<String, BasicTypeObject>>{
             }
 
             allResults.put(id, row);
+
+            index++;
         }
     }
 
