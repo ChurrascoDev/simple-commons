@@ -2,6 +2,7 @@ package com.github.imthenico.simplecommons.data.repository;
 
 import com.github.imthenico.simplecommons.data.repository.exception.ReadException;
 import com.github.imthenico.simplecommons.data.repository.exception.SerializationException;
+import com.github.imthenico.simplecommons.data.repository.exception.UnknownTargetException;
 import com.github.imthenico.simplecommons.data.repository.exception.WriteException;
 import com.github.imthenico.simplecommons.data.util.FileUtils;
 import com.github.imthenico.simplecommons.util.Validate;
@@ -58,11 +59,11 @@ public class FileRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(String id) throws UnknownTargetException {
         File found = findFile(id, false);
 
         if (!found.exists())
-            return;
+            throw new UnknownTargetException(String.format("unknown file (%s)", id));
 
         if (!found.delete())
             throw new UnsupportedOperationException(String.format("unable to delete file %s", id));

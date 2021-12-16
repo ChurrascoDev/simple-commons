@@ -4,6 +4,7 @@ import com.github.imthenico.simplecommons.data.db.sql.model.Constraint;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.data.db.sql.query.QueryProcessor;
 import com.github.imthenico.simplecommons.data.db.sql.query.QueryResult;
+import com.github.imthenico.simplecommons.data.repository.exception.UnknownTargetException;
 import com.github.imthenico.simplecommons.data.repository.service.AbstractSQLSavingService;
 import com.github.imthenico.simplecommons.data.repository.service.MySQLSavingService;
 import com.github.imthenico.simplecommons.data.repository.service.SavingService;
@@ -55,11 +56,14 @@ public class SQLRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public void delete(String key) {
-        processor.newBinder("DELETE * FROM <table> WHERE(<p>)")
+    public void delete(String key) throws UnknownTargetException {
+        int actionResult = processor.newBinder("DELETE * FROM <table> WHERE(<p>)")
                 .parameters(sqlTableModel.filterByConstraint(Constraint.PRIMARY).toParameter())
                 .bindValue(key)
                 .update();
+
+        if (actionResult <= 0)
+            throw new UnknownTargetException(String.format("unknown registry (%s)", key));
     }
 
     @Override
@@ -68,6 +72,9 @@ public class SQLRepository<T> extends AbstractRepository<T> {
                 .parameters(sqlTableModel.filterByConstraint(Constraint.PRIMARY).toParameter())
                 .bindValue(key)
                 .query();
+
+        if (result == QueryResult.EMPTY)
+            return null;
 
         return mapper.mapFields(result.getRow(key), modelClass);
     }
