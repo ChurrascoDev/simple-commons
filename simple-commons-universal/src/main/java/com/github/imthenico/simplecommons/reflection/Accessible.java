@@ -11,7 +11,7 @@ public abstract class Accessible<T extends AccessibleObject> {
     }
 
     public Object getObject(Object obj, Object... args) {
-        boolean oldAccessible = handle.canAccess(obj);
+        boolean oldAccessible = handle.isAccessible();
         handle.setAccessible(true);
 
         Object value = null;
