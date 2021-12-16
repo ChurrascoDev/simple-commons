@@ -44,7 +44,13 @@ public class QueryProcessor {
         try {
             Validate.isTrue(!statement.isClosed(), "closed statement");
 
-            return new QueryResult(statement.executeQuery(), sqlTableModel);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (!resultSet.isBeforeFirst()) {
+                return QueryResult.EMPTY;
+            }
+
+            return new QueryResult(resultSet, sqlTableModel);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -62,22 +68,26 @@ public class QueryProcessor {
         return QueryResult.EMPTY;
     }
 
-    public void executeUpdate(PreparedStatement statement) {
+    public int executeUpdate(PreparedStatement statement) {
         try {
             Validate.isTrue(!statement.isClosed(), "closed statement");
 
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return -1;
     }
 
-    public void executeUpdate(String query) {
+    public int executeUpdate(String query) {
         try {
-            executeUpdate(connection.prepareStatement(query));
+            return executeUpdate(connection.prepareStatement(query));
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return -1;
     }
 
     public ExecutableValueBinder newBinder(String query) {
