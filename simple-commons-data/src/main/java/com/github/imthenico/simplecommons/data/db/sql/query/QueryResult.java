@@ -54,6 +54,8 @@ public class QueryResult implements Iterable<Map<String, BasicTypeObject>>{
 
             index++;
         }
+
+        resultSet.close();
     }
 
     public Map<String, BasicTypeObject> getRow(String id) {
