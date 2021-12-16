@@ -3,7 +3,10 @@ package com.github.imthenico.simplecommons.data.db.sql.query;
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
 import com.github.imthenico.simplecommons.util.Validate;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
