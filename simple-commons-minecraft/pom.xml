@@ -9,7 +9,15 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>simple-commons-universal</artifactId>
+    <artifactId>simple-commons-minecraft</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.imthenico</groupId>
+            <artifactId>simple-commons-universal</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
