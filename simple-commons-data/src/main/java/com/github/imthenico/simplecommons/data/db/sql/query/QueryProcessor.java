@@ -161,12 +161,14 @@ public class QueryProcessor {
             return this;
         }
 
-        public void update() {
+        public int update() {
             try (PreparedStatement statement = prepareStatement()) {
-                statement.executeUpdate();
+                return statement.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
+            return -1;
         }
 
         public QueryResult query() {
