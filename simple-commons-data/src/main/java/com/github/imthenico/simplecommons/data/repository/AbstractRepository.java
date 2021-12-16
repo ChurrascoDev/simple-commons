@@ -70,7 +70,7 @@ public abstract class AbstractRepository<T> implements SavingService<T>, Deletio
     }
 
     private <O> CompletableFuture<O> newFuture(Supplier<O> resultSupplier, Executor executor, Consumer<Throwable> exceptionHandler) {
-        CompletableFuture<O> future = executor != null ? CompletableFuture.supplyAsync(resultSupplier) : CompletableFuture.completedFuture(resultSupplier.get());
+        CompletableFuture<O> future = executor != null ? CompletableFuture.supplyAsync(resultSupplier, executor) : CompletableFuture.completedFuture(resultSupplier.get());
 
         future.exceptionally(throwable -> {
             exceptionHandler.accept(throwable);
