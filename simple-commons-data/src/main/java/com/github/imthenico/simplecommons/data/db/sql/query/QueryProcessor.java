@@ -101,11 +101,12 @@ public class QueryProcessor {
         return connection;
     }
 
-    public class ExecutableValueBinder {
+    public static class ExecutableValueBinder {
 
         private final Map<Object, Object> valuesToBind;
         private final Connection connection;
         private final QueryProcessor queryProcessor;
+        private final SQLTableModel sqlTableModel;
 
         private String query;
         private String parameters;
@@ -114,6 +115,7 @@ public class QueryProcessor {
             this.connection = Validate.notNull(connection);
             this.queryProcessor = Validate.notNull(queryProcessor);
             this.query = Validate.notNull(query);
+            this.sqlTableModel = queryProcessor.sqlTableModel;
             this.valuesToBind = new HashMap<>();
         }
 
