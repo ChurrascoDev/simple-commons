@@ -1,6 +1,5 @@
 package com.github.imthenico.simplecommons.data.node;
 
-import com.github.imthenico.simplecommons.data.node.value.EmptyNodeValue;
 import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValue;
 import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValueList;
 import com.github.imthenico.simplecommons.util.Validate;
@@ -43,7 +42,7 @@ public class SimpleTreeNode implements TreeNode {
             value = valueMap.get(path);
         }
 
-        return Validate.defIfNull(value, EmptyNodeValue.INSTANCE);
+        return Validate.defIfNull(value, SimpleNodeValue.EMPTY);
     }
 
     @Override
