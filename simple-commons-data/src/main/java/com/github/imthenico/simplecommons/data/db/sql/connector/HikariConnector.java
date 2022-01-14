@@ -13,6 +13,8 @@ import java.util.function.Consumer;
 
 public class HikariConnector extends Connector<Connection> {
 
+    public final static String MYSQL_JDBC_URL = "jdbc:mysql://<ip>:<port>/<database>";
+
     private final Properties properties;
     private Consumer<HikariConfig> postConfigBuild = (config) -> {};
     private String jdbcUrl;
@@ -46,7 +48,7 @@ public class HikariConnector extends Connector<Connection> {
         Objects.requireNonNull(credential, "credential");
 
         HikariConfig config = new HikariConfig(properties);
-        config.setJdbcUrl(String.format(jdbcUrl, credential.getIp(), credential.getPort(), credential.getDatabase()));
+        config.setJdbcUrl(credential.apply(jdbcUrl));
         config.setUsername(credential.getUserName());
         config.setPassword(credential.getPassword());
 

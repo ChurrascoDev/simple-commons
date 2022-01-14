@@ -1,12 +1,12 @@
 package com.github.imthenico.simplecommons.data.repository.service;
 
 import com.github.imthenico.simplecommons.data.db.sql.model.SQLTableModel;
-import com.github.imthenico.simplecommons.data.db.sql.query.QueryProcessor;
-import com.github.imthenico.simplecommons.data.repository.GenericMapper;
-import com.github.imthenico.simplecommons.data.repository.Response;
+import com.github.imthenico.simplecommons.data.key.SourceKey;
+import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
 import com.github.imthenico.simplecommons.util.Validate;
 
 import java.sql.Connection;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractSQLSavingService<T> implements SavingService<T> {
 
@@ -14,7 +14,7 @@ public abstract class AbstractSQLSavingService<T> implements SavingService<T> {
 
     protected SQLTableModel sqlTableModel;
     protected GenericMapper<?> mapper;
-    protected QueryProcessor processor;
+    protected Connection connection;
 
     public void init(SQLTableModel sqlTableModel, GenericMapper<?> mapper, Connection connection) {
         Validate.isTrue(!initialized, "sql saving service is already initialized");
@@ -23,11 +23,11 @@ public abstract class AbstractSQLSavingService<T> implements SavingService<T> {
 
         this.sqlTableModel = Validate.notNull(sqlTableModel);
         this.mapper = Validate.notNull(mapper);
-        this.processor = new QueryProcessor(Validate.notNull(connection), sqlTableModel);
+        this.connection = Validate.notNull(connection);
     }
 
     @Override
-    public Response<?> asyncSave(T obj, String key) {
+    public CompletableFuture<?> asyncSave(T obj, SourceKey key) {
         return null;
     }
 }

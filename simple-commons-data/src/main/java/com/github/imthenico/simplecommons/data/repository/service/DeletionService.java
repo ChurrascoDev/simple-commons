@@ -1,11 +1,14 @@
 package com.github.imthenico.simplecommons.data.repository.service;
 
-import com.github.imthenico.simplecommons.data.repository.Response;
+import com.github.imthenico.simplecommons.data.key.SourceKey;
+import com.github.imthenico.simplecommons.data.repository.exception.UnknownTargetException;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface DeletionService {
 
-    Response<?> asyncDelete(String key);
+    CompletableFuture<Integer> asyncDelete(SourceKey key);
 
-    void delete(String key);
+    int delete(SourceKey key) throws UnknownTargetException;
 
 }

@@ -1,7 +1,11 @@
 package com.github.imthenico.simplecommons.data.repository;
 
+import com.github.imthenico.simplecommons.data.key.SimpleSourceKey;
+import com.github.imthenico.simplecommons.data.key.SourceKey;
+import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
 import com.github.imthenico.simplecommons.data.repository.exception.ReadException;
 import com.github.imthenico.simplecommons.data.repository.exception.SerializationException;
+import com.github.imthenico.simplecommons.data.repository.exception.UnknownTargetException;
 import com.github.imthenico.simplecommons.data.repository.exception.WriteException;
 import com.github.imthenico.simplecommons.data.util.FileUtils;
 import com.github.imthenico.simplecommons.util.Validate;
@@ -22,9 +26,9 @@ public class FileRepository<T> extends AbstractRepository<T> {
     public FileRepository(
             Executor taskProcessor,
             Class<T> modelClass,
+            GenericMapper<String> mapper,
             File folder,
-            String fileExtension,
-            GenericMapper<String> mapper
+            String fileExtension
     ) {
         super(taskProcessor, modelClass);
 
@@ -41,7 +45,7 @@ public class FileRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public void save(T obj, String key) {
+    public void save(T obj, SourceKey key) {
         File found = findFile(key, true);
 
         try {
@@ -58,18 +62,20 @@ public class FileRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public void delete(String id) {
-        File found = findFile(id, false);
+    public int delete(SourceKey key) throws UnknownTargetException {
+        File found = findFile(key, false);
 
         if (!found.exists())
-            return;
+            return 0;
 
         if (!found.delete())
-            throw new UnsupportedOperationException(String.format("unable to delete file %s", id));
+            throw new UnsupportedOperationException(String.format("unable to delete file %s", found.getPath()));
+
+        return 1;
     }
 
     @Override
-    public T usingId(String key) {
+    public T usingId(SourceKey key) {
         File found = findFile(key, false);
 
         if (!found.exists())
@@ -92,10 +98,10 @@ public class FileRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public Set<String> keys() {
-        Set<String> all = new HashSet<>();
+    public Set<SourceKey> keys() {
+        Set<SourceKey> all = new HashSet<>();
 
-        forEachFile(folder, (file) -> all.add(file.getName()));
+        forEachFile(folder, (file) -> all.add(new SimpleSourceKey(file.getName(), "parentPath", file.getParent())));
 
         return all;
     }
@@ -118,17 +124,21 @@ public class FileRepository<T> extends AbstractRepository<T> {
         }
     }
 
-    private File findFile(String id, boolean create) {
-        String name = id.endsWith(fileExtension) ? id : id + fileExtension;
+    private File findFile(SourceKey key, boolean create) {
+        String fileName = key.getKey();
 
-        File found = new File(folder, name);
+        if (fileName.endsWith(fileExtension)) {
+            fileName += fileExtension;
+        }
+
+        File found = new File(new File(folder, key.getExtraData("parentPath", "")), fileName);
 
         try {
             if (found.exists()) {
                 if (!found.isFile())
                     throw new IllegalArgumentException("invalid document (is a directory)");
             } else if (create) {
-                Validate.isTrue(found.createNewFile(), String.format("unable to create file '%s'", name));
+                Validate.isTrue(found.createNewFile(), String.format("unable to create file '%s'", found.getAbsolutePath()));
             }
         } catch (IOException e) {
             e.printStackTrace();

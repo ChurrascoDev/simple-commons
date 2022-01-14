@@ -1,18 +1,18 @@
 package com.github.imthenico.simplecommons.data.repository;
 
+import com.github.imthenico.simplecommons.data.key.SourceKey;
 import com.github.imthenico.simplecommons.data.repository.service.DeletionService;
 import com.github.imthenico.simplecommons.data.repository.service.FindService;
 import com.github.imthenico.simplecommons.data.repository.service.SavingService;
 import com.github.imthenico.simplecommons.util.Validate;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 public abstract class AbstractRepository<T> implements SavingService<T>, DeletionService, FindService<T> {
-
-    protected static final Logger REPOSITORY_LOGGER = Logger.getLogger("REPO_LOGGER");
 
     protected final Executor taskProcessor;
     protected final Class<T> modelClass;
@@ -30,40 +30,62 @@ public abstract class AbstractRepository<T> implements SavingService<T>, Deletio
     }
 
     @Override
-    public Response<?> asyncSave(T obj, String key) {
+    public CompletableFuture<?> asyncSave(T obj, SourceKey key) {
         return run(() -> save(obj, key));
     }
 
     @Override
-    public Response<?> asyncDelete(String key) {
-        return run(() -> delete(key));
+    public CompletableFuture<Integer> asyncDelete(SourceKey key) {
+        return supply(() -> delete(key));
     }
 
     @Override
-    public Response<T> asyncFind(String key) {
+    public CompletableFuture<T> asyncFind(SourceKey key) {
         return supply(() -> usingId(key));
     }
 
     @Override
-    public Response<Set<T>> asyncAllCollection() {
+    public CompletableFuture<Set<T>> asyncAllCollection() {
         return supply(this::all);
     }
 
     @Override
-    public Response<Set<String>> asyncKeyCollection() {
+    public CompletableFuture<Set<SourceKey>> asyncKeyCollection() {
         return supply(this::keys);
     }
 
-    protected Response<?> run(Runnable runnable) {
-        return Response.newResponse(() -> {
+    protected CompletableFuture<?> run(Runnable runnable) {
+        return newFuture(() -> {
             runnable.run();
             return null;
         }, taskProcessor, Throwable::printStackTrace);
     }
 
-    protected <O> Response<O> supply(Supplier<O> supplier) {
+    protected <O> CompletableFuture<O> supply(Supplier<O> supplier) {
         Validate.notNull(taskProcessor, "executor is null");
 
-        return Response.newResponse(supplier, taskProcessor, Throwable::printStackTrace);
+        return newFuture(supplier, taskProcessor, Throwable::printStackTrace);
+    }
+
+    private <O> CompletableFuture<O> newFuture(Supplier<O> resultSupplier, Executor executor, Consumer<Throwable> exceptionHandler) {
+        CompletableFuture<O> future = executor != null ? CompletableFuture.supplyAsync(resultSupplier, executor) : CompletableFuture.completedFuture(resultSupplier.get());
+
+        future.exceptionally(throwable -> {
+            exceptionHandler.accept(throwable);
+            return null;
+        });
+
+        return future;
+    }
+
+    private CompletableFuture<?> newFuture(Runnable runnable, Executor executor, Consumer<Throwable> exceptionHandler) {
+        CompletableFuture<?> future = executor != null ? CompletableFuture.runAsync(runnable, executor) : CompletableFuture.runAsync(runnable);
+
+        future.exceptionally(throwable -> {
+            exceptionHandler.accept(throwable);
+            return null;
+        });
+
+        return future;
     }
 }
