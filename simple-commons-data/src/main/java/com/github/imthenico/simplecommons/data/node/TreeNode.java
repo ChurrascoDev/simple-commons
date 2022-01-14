@@ -1,5 +1,10 @@
 package com.github.imthenico.simplecommons.data.node;
 
+import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
+import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValue;
+import com.github.imthenico.simplecommons.util.Validate;
+
+import java.io.*;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -31,13 +36,51 @@ public interface TreeNode {
 
     default void forEach(BiConsumer<String, NodeValue> action, boolean deep) {
         for (Map.Entry<String, NodeValue> entry : simple().entrySet()) {
-            Optional<TreeNode> possibleNode = entry.getValue().getAsNode();
+            NodeValue value = Validate.defIfNull(entry.getValue(), SimpleNodeValue.EMPTY);
+
+            Optional<TreeNode> possibleNode = value.getAsNode();
 
             if (possibleNode.isPresent() && deep) {
                 possibleNode.get().forEach(action, true);
             }
 
-            action.accept(entry.getKey(), entry.getValue());
+            action.accept(entry.getKey(), value);
         }
+    }
+
+    static TreeNode create() {
+        return new SimpleTreeNode(null, null);
+    }
+
+    static TreeNode copy(TreeNode treeNode) {
+        TreeNode copy = create();
+
+        treeNode.forEach(copy::set, false);
+
+        return copy;
+    }
+
+    static TreeNode load(
+            GenericMapper<String> mapper,
+            File file
+    ) throws IOException {
+        return load(mapper, new FileReader(file));
+    }
+
+    static TreeNode load(
+            GenericMapper<String> mapper,
+            Reader reader
+    ) throws IOException {
+        BufferedReader bufferedReader = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String line;
+
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+
+        return mapper.map(stringBuilder.toString(), TreeNode.class);
     }
 }

@@ -1,20 +1,21 @@
 package com.github.imthenico.simplecommons.value;
 
-import com.github.imthenico.simplecommons.util.list.ArrayContainer;
-
-import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
-public class SimpleAbstractValue implements AbstractValue {
+public final class SimpleAbstractValue implements AbstractValue {
 
-    protected Object value;
+    public static final SimpleAbstractValue EMPTY = new SimpleAbstractValue(null);
+
+    private final Object value;
 
     public SimpleAbstractValue(Object value) {
         if (value != null) {
-            checkType(value);
-
-            this.value = value;
+            if (!isValid(value))
+                throw new UnsupportedOperationException("Illegal value type: " + value.getClass());
         }
+
+        this.value = value;
     }
 
     @Override
@@ -55,13 +56,6 @@ public class SimpleAbstractValue implements AbstractValue {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> Optional<ArrayContainer<E>> getAsArray() {
-        return value instanceof ArrayContainer ? Optional.of((ArrayContainer<E>) value)
-                : value != null && value.getClass().isArray() ? Optional.of(new ArrayContainer<>((E[]) value)) : Optional.empty();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public <T> T getValue() {
         return (T) value;
     }
@@ -81,26 +75,17 @@ public class SimpleAbstractValue implements AbstractValue {
         return new SimpleAbstractValue(value);
     }
 
-    protected void checkType(Object value) {
-        if (value instanceof ArrayContainer) {
-            for (Object o : ((ArrayContainer<?>) value)) {
-                checkType(o);
-            }
-        } else if (value instanceof Collection) {
-            for (Object o : ((Collection<?>) value)) {
-                checkType(o);
-            }
-        } else if (value.getClass().isArray()) {
-            for (Object o : (Object[]) value) {
-                checkType(o);
-            }
-        } else {
-            for (Class<?> clazz : new Class[]{String.class, Character.class, Number.class, Boolean.class}) {
-                if (clazz.isInstance(value))
-                    return;
-            }
+    @Override
+    public String toString() {
+        return Objects.toString(value);
+    }
+
+    private boolean isValid(Object value) {
+        for (Class<?> clazz : new Class[]{String.class, Character.class, Number.class, Boolean.class}) {
+            if (clazz.isInstance(value))
+                return true;
         }
 
-        throw new UnsupportedOperationException("Unsupported type:" + value.getClass().getName());
+        return false;
     }
 }

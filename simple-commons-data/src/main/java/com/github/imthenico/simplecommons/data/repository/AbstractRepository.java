@@ -1,5 +1,6 @@
 package com.github.imthenico.simplecommons.data.repository;
 
+import com.github.imthenico.simplecommons.data.key.SourceKey;
 import com.github.imthenico.simplecommons.data.repository.service.DeletionService;
 import com.github.imthenico.simplecommons.data.repository.service.FindService;
 import com.github.imthenico.simplecommons.data.repository.service.SavingService;
@@ -10,11 +11,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 public abstract class AbstractRepository<T> implements SavingService<T>, DeletionService, FindService<T> {
-
-    protected static final Logger REPOSITORY_LOGGER = Logger.getLogger("REPO_LOGGER");
 
     protected final Executor taskProcessor;
     protected final Class<T> modelClass;
@@ -32,17 +30,17 @@ public abstract class AbstractRepository<T> implements SavingService<T>, Deletio
     }
 
     @Override
-    public CompletableFuture<?> asyncSave(T obj, String key) {
+    public CompletableFuture<?> asyncSave(T obj, SourceKey key) {
         return run(() -> save(obj, key));
     }
 
     @Override
-    public CompletableFuture<?> asyncDelete(String key) {
-        return run(() -> delete(key));
+    public CompletableFuture<Integer> asyncDelete(SourceKey key) {
+        return supply(() -> delete(key));
     }
 
     @Override
-    public CompletableFuture<T> asyncFind(String key) {
+    public CompletableFuture<T> asyncFind(SourceKey key) {
         return supply(() -> usingId(key));
     }
 
@@ -52,7 +50,7 @@ public abstract class AbstractRepository<T> implements SavingService<T>, Deletio
     }
 
     @Override
-    public CompletableFuture<Set<String>> asyncKeyCollection() {
+    public CompletableFuture<Set<SourceKey>> asyncKeyCollection() {
         return supply(this::keys);
     }
 

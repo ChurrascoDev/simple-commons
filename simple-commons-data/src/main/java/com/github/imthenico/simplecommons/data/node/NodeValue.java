@@ -1,18 +1,21 @@
 package com.github.imthenico.simplecommons.data.node;
 
 import com.github.imthenico.simplecommons.value.AbstractValue;
-import com.github.imthenico.simplecommons.value.MutableValue;
 
 import java.util.Optional;
 
-public interface NodeValue extends AbstractValue {
+public interface NodeValue {
 
     Optional<TreeNode> getAsNode();
 
-    @Override
+    Optional<NodeValueList> getAsArray();
+
+    Optional<AbstractValue> getAsSimpleValue();
+
     NodeValue immutableCopy();
 
-    @Override
-    MutableValue mutableCopy();
+    boolean isNull();
+
+    Object getValue();
 
 }

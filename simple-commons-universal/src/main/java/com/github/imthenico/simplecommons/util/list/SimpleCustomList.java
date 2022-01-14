@@ -3,14 +3,14 @@ package com.github.imthenico.simplecommons.util.list;
 import java.util.*;
 import java.util.function.Function;
 
-public final class SimpleCustomList<E> extends AbstractList<E> implements CustomList<E> {
+public class SimpleCustomList<E> extends AbstractList<E> implements CustomList<E> {
 
     private static final Random RANDOM = new Random();
 
-    private final Function<List<E>, List<E>> listProvider;
-    private final List<E> list;
+    protected final Function<List<E>, List<E>> listProvider;
+    protected final List<E> list;
 
-    SimpleCustomList(
+    protected SimpleCustomList(
             Function<List<E>, List<E>> listProvider,
             List<E> list
     ) {
@@ -44,6 +44,11 @@ public final class SimpleCustomList<E> extends AbstractList<E> implements Custom
     @Override
     public boolean add(E element) {
         return list.add(element);
+    }
+
+    @Override
+    public void add(int index, E element) {
+        list.add(index, element);
     }
 
     @Override

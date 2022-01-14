@@ -1,7 +1,9 @@
 package com.github.imthenico.simplecommons.data.node;
 
+import com.github.imthenico.simplecommons.data.node.value.EmptyNodeValue;
+import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValue;
+import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValueList;
 import com.github.imthenico.simplecommons.util.Validate;
-import com.github.imthenico.simplecommons.util.list.ArrayContainer;
 import com.github.imthenico.simplecommons.value.*;
 
 import java.util.*;
@@ -18,7 +20,7 @@ public class SimpleTreeNode implements TreeNode {
     ) {
         this.parent = parent;
         this.root = root;
-        this.valueMap = new HashMap<>();
+        this.valueMap = new LinkedHashMap<>();
     }
 
     @Override
@@ -41,10 +43,11 @@ public class SimpleTreeNode implements TreeNode {
             value = valueMap.get(path);
         }
 
-        return Validate.defIfNull(value, new EmptyNodeValue());
+        return Validate.defIfNull(value, EmptyNodeValue.INSTANCE);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void set(String path, Object value) {
         int i = path.lastIndexOf(".");
 
@@ -54,7 +57,20 @@ public class SimpleTreeNode implements TreeNode {
 
             getOrCreate(nodePath).set(lastPathKey, value);
         } else {
-            internalValueCreation(path, value);
+            if (value instanceof Map) {
+                TreeNode node = getOrCreate(path);
+
+                node.set((Map<String, Object>) value);
+                return;
+            }
+
+            NodeValue nodeValue = null;
+
+            if (value != null) {
+                nodeValue = interceptValue(value);
+            }
+
+            internalValueCreation(path, nodeValue);
         }
     }
 
@@ -90,7 +106,7 @@ public class SimpleTreeNode implements TreeNode {
             }
 
             TreeNode node = new SimpleTreeNode(this, root);
-            internalValueCreation(path, node);
+            internalValueCreation(path, new SimpleNodeValue(node));
 
             return Optional.of(node);
         }
@@ -132,98 +148,43 @@ public class SimpleTreeNode implements TreeNode {
         return Collections.unmodifiableSet(valueMap.keySet());
     }
 
-    private void internalValueCreation(String key, Object value) {
-        valueMap.compute(key, (k, v) -> new SimpleNodeValue(value));
+    private void internalValueCreation(String key, NodeValue value) {
+        valueMap.put(key, value);
     }
 
-    class SimpleNodeValue extends SimpleAbstractValue implements NodeValue {
+    @SuppressWarnings("unchecked")
+    protected NodeValueList interceptCollection(Collection<?> obj) {
+        List<NodeValue> nodeValues = new ArrayList<>(obj.size());
 
-        public SimpleNodeValue(Object value) {
-            super(null);
+        for (Object o : obj) {
+            NodeValue nodeValue;
+            if (o instanceof Map) {
+                TreeNode treeNode = TreeNode.create();
 
-            if (!(value instanceof TreeNode)) {
-                checkType(value);
+                treeNode.set((Map<String, Object>) o);
+                nodeValue = new SimpleNodeValue(treeNode);
+            } else {
+                nodeValue = interceptValue(o);
             }
 
-            this.value = value;
+            nodeValues.add(nodeValue);
         }
 
-        @Override
-        public Optional<TreeNode> getAsNode() {
-            return value instanceof TreeNode ? Optional.of((TreeNode) value) : Optional.empty();
-        }
-
-        @Override
-        public NodeValue immutableCopy() {
-            return new SimpleNodeValue(value);
-        }
-
-        @Override
-        public boolean mutable() {
-            return SimpleTreeNode.this.mutable();
-        }
+        return new SimpleNodeValueList(nodeValues);
     }
 
-    static class EmptyNodeValue implements NodeValue {
+    protected NodeValue interceptValue(Object o) {
+        if (o instanceof AbstractValue)
+            return new SimpleNodeValue(((AbstractValue) o).getValue());
 
-        @Override
-        public Optional<TreeNode> getAsNode() {
-            return Optional.empty();
-        }
-
-        @Override
-        public NodeValue immutableCopy() {
-            return this;
-        }
-
-        @Override
-        public <T> T getValue() {
-            return null;
-        }
-
-        @Override
-        public boolean mutable() {
-            return false;
-        }
-
-        @Override
-        public MutableValue mutableCopy() {
-            return new SimpleMutableValue(null);
-        }
-
-        @Override
-        public <T> Optional<T> cast() {
-            return Optional.empty();
-        }
-
-        @Override
-        public <T> Optional<T> cast(Class<T> clazz) {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<String> getAsString() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Character> getAsChar() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Number> getAsNumber() {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Boolean> getAsBoolean() {
-            return Optional.empty();
-        }
-
-        @Override
-        public <E> Optional<ArrayContainer<E>> getAsArray() {
-            return Optional.empty();
+        if (o instanceof Collection<?>) {
+            return new SimpleNodeValue(interceptCollection((Collection<?>) o));
+        } else if (o.getClass().isArray()) {
+            return new SimpleNodeValue(interceptCollection(Arrays.asList((Object[]) o)));
+        } else if (o instanceof TreeNode) {
+            return new SimpleNodeValue(TreeNode.copy((TreeNode) o));
+        } else {
+            return new SimpleNodeValue(new SimpleAbstractValue(o));
         }
     }
 }

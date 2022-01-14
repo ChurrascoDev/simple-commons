@@ -5,11 +5,11 @@ import com.github.imthenico.simplecommons.util.Validate;
 import java.util.AbstractList;
 import java.util.Optional;
 
-public final class ImmutableCustomList<E> extends AbstractList<E> implements CustomList<E> {
+public class ImmutableCustomList<E> extends AbstractList<E> implements CustomList<E> {
 
-    private final CustomList<E> original;
+    private final SimpleCustomList<E> original;
 
-    ImmutableCustomList(CustomList<E> original) {
+    protected ImmutableCustomList(SimpleCustomList<E> original) {
         this.original = Validate.notNull(original);
     }
 
@@ -30,12 +30,12 @@ public final class ImmutableCustomList<E> extends AbstractList<E> implements Cus
 
     @Override
     public ImmutableCustomList<E> immutableCopy() {
-        return new ImmutableCustomList<>(this);
+        return new ImmutableCustomList<>(original);
     }
 
     @Override
     public CustomList<E> copy() {
-        return original.copy();
+        return CustomList.of(original.listProvider, original.list);
     }
 
     @Override

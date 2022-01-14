@@ -38,4 +38,8 @@ public class ArrayContainer<E> implements Iterable<E> {
             }
         };
     }
+
+    public static <E> ArrayContainer<E> copy(E[] value) {
+        return new ArrayContainer<>(Arrays.copyOf(value, value.length));
+    }
 }

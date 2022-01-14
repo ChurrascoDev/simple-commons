@@ -1,7 +1,5 @@
 package com.github.imthenico.simplecommons.value;
 
-import com.github.imthenico.simplecommons.util.list.ArrayContainer;
-
 import java.util.Optional;
 
 public interface AbstractValue extends Value {
@@ -17,7 +15,5 @@ public interface AbstractValue extends Value {
     Optional<Number> getAsNumber();
 
     Optional<Boolean> getAsBoolean();
-
-    <E> Optional<ArrayContainer<E>> getAsArray();
 
 }
