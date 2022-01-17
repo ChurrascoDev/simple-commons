@@ -4,8 +4,6 @@ import com.github.imthenico.simplecommons.data.node.TreeNode;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TreeNodeTypeAdapter implements JsonDeserializer<TreeNode>, JsonSerializer<TreeNode> {
