@@ -23,7 +23,7 @@ public class Configuration extends YamlConfiguration {
         String fileName = filename + (filename.endsWith(fileExtension) ? "" : fileExtension);
         this.file = new File(folder, fileName);
         this.resourceFileName = !Objects.equals(resourceFolder, "") ? file.getName() + File.separator + resourceFolder : file.getName();
-        this.createFile();
+        this.loadFileContent(true);
     }
 
     public Configuration(Plugin plugin, File file, String resourceFolder) {
@@ -46,17 +46,19 @@ public class Configuration extends YamlConfiguration {
         this(plugin, file, "");
     }
 
-    private void createFile() {
+    public void loadFileContent(boolean saveDefaults) {
         try {
             if (!file.exists()) {
-                if (this.plugin.getResource(resourceFileName) != null) {
+                if (saveDefaults && this.plugin.getResource(resourceFileName) != null) {
                     this.plugin.saveResource(resourceFileName, false);
                 } else {
                     this.save(file);
                 }
+
                 this.load(file);
                 return;
             }
+
             this.load(file);
         } catch (InvalidConfigurationException | IOException e) {
             e.printStackTrace();

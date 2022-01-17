@@ -2,7 +2,6 @@ package com.github.imthenico.simplecommons.bukkit.listeners;
 
 import com.github.imthenico.simplecommons.bukkit.event.PluginServicePreStartEvent;
 import com.github.imthenico.simplecommons.bukkit.event.ServiceEventType;
-import com.github.imthenico.simplecommons.bukkit.service.PluginService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
