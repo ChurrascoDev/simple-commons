@@ -38,7 +38,10 @@ public class MappableNodeValue implements Mappable, NodeValue {
             List<T> list = new ArrayList<>(nodeValues.size());
 
             for (NodeValue nodeValue : nodeValues) {
-                list.add(mapValue(mapper, nodeValue, Validate.notNull(target)));
+                T mapped = mapValue(mapper, nodeValue, Validate.notNull(target));
+
+                if (mapped != null)
+                    list.add(mapped);
             }
 
             return list;
