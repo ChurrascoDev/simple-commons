@@ -60,6 +60,14 @@ public interface TreeNode {
         return copy;
     }
 
+    static AdapterNode createAdapterNode(GenericMapper<String> mapper) {
+        return new AdapterNode(create(), mapper);
+    }
+
+    static AdapterNode adapterNode(GenericMapper<String> mapper, TreeNode delegate) {
+        return new AdapterNode(delegate, mapper);
+    }
+
     static TreeNode load(
             GenericMapper<String> mapper,
             File file
