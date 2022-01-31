@@ -5,17 +5,17 @@ import java.io.*;
 public interface FileUtils {
 
     static String readTextFile(File file) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder stringBuilder = new StringBuilder();
 
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
 
-        String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
 
-        while ((line = reader.readLine()) != null) {
-            stringBuilder.append(line);
+            return stringBuilder.toString();
         }
-
-        return stringBuilder.toString();
     }
 
     static void setTextContent(File file, String content) throws IOException {
