@@ -41,18 +41,19 @@ public class ConfigurationTreeNode extends DelegatedNode {
 
     @NotNull
     public static ConfigurationTreeNode load(GenericMapper<String> mapper, File file) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
 
-        StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
-        String line;
+            String line;
 
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+
+            String lines = stringBuilder.toString();
+
+            return new ConfigurationTreeNode(mapper.map(lines, TreeNode.class), new ConfigurationTreeNodeSource(lines, new SimpleSourceKey(file.getName(), "parentPath", file.getParent())));
         }
-
-        String lines = stringBuilder.toString();
-
-        return new ConfigurationTreeNode(mapper.map(lines, TreeNode.class), new ConfigurationTreeNodeSource(lines, new SimpleSourceKey(file.getName(), "parentPath", file.getParent())));
     }
 }

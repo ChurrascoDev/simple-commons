@@ -79,16 +79,16 @@ public interface TreeNode {
             GenericMapper<String> mapper,
             Reader reader
     ) throws IOException {
-        BufferedReader bufferedReader = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
+       try (BufferedReader bufferedReader = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader)) {
+           StringBuilder stringBuilder = new StringBuilder();
 
-        StringBuilder stringBuilder = new StringBuilder();
+           String line;
 
-        String line;
+           while ((line = bufferedReader.readLine()) != null) {
+               stringBuilder.append(line);
+           }
 
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
-        }
-
-        return mapper.map(stringBuilder.toString(), TreeNode.class);
+           return mapper.map(stringBuilder.toString(), TreeNode.class);
+       }
     }
 }
