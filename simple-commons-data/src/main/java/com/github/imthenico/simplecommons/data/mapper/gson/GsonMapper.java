@@ -3,7 +3,6 @@ package com.github.imthenico.simplecommons.data.mapper.gson;
 import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
 import com.github.imthenico.simplecommons.data.node.NodeValue;
 import com.github.imthenico.simplecommons.data.node.TreeNode;
-import com.github.imthenico.simplecommons.data.repository.exception.SerializationException;
 import com.github.imthenico.simplecommons.value.AbstractValue;
 import com.github.imthenico.simplecommons.value.Value;
 import com.google.gson.*;
@@ -36,8 +35,8 @@ public class GsonMapper implements GenericMapper<String> {
     }
 
     @Override
-    public String serialize(Object o) throws SerializationException {
-        return SerializationException.catchCause(() -> gson.toJson(o));
+    public String serialize(Object o) {
+        return gson.toJson(o);
     }
 
     @Override
@@ -47,9 +46,17 @@ public class GsonMapper implements GenericMapper<String> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, AbstractValue> toMap(Object toSerialize) throws SerializationException {
+    public Map<String, AbstractValue> toMap(Object toSerialize) {
         JsonElement jsonElement = gson.toJsonTree(toSerialize);
 
-        return SerializationException.catchCause(() -> gson.fromJson(jsonElement, Map.class));
+        return gson.fromJson(jsonElement, Map.class);
+    }
+
+    @Override
+    public <O> O mapDirectly(Object obj, Class<O> target) {
+        return gson.fromJson(
+                gson.toJsonTree(obj),
+                target
+        );
     }
 }
