@@ -3,7 +3,6 @@ package com.github.imthenico.simplecommons.data.node;
 import com.github.imthenico.simplecommons.data.exception.MappingException;
 import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
 import com.github.imthenico.simplecommons.data.mapper.Mappable;
-import com.github.imthenico.simplecommons.data.repository.exception.SerializationException;
 import com.github.imthenico.simplecommons.util.Validate;
 import com.github.imthenico.simplecommons.value.AbstractValue;
 
@@ -80,22 +79,19 @@ public class MappableNodeValue implements Mappable, NodeValue {
     }
 
     private static <T> T mapValue(GenericMapper<String> mapper, NodeValue value, Class<T> target) {
+        Object toSerialize = null;
+
         Optional<AbstractValue> optionalValue = value.getAsSimpleValue();
-
-        if (optionalValue.isPresent()) {
-            return mapper.map(Objects.toString(optionalValue.get().getValue()), target);
-        }
-
         Optional<TreeNode> optionalNode = value.getAsNode();
 
-        if (optionalNode.isPresent()) {
-            try {
-                String serialized = mapper.serialize(optionalNode.get());
+        if (optionalValue.isPresent()) {
+            toSerialize = optionalValue.get();
+        } else if (optionalNode.isPresent()) {
+            toSerialize = optionalNode.get();
+        }
 
-                mapper.map(serialized, target);
-            } catch (SerializationException e) {
-                e.printStackTrace();
-            }
+        if (toSerialize != null) {
+            return mapper.mapDirectly(toSerialize, target);
         }
 
         return null;
