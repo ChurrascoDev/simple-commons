@@ -3,7 +3,6 @@ package com.github.imthenico.simplecommons.data.repository;
 import com.github.imthenico.simplecommons.data.key.SimpleSourceKey;
 import com.github.imthenico.simplecommons.data.key.SourceKey;
 import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
-import com.github.imthenico.simplecommons.data.repository.exception.SerializationException;
 import com.github.imthenico.simplecommons.util.Validate;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
@@ -38,18 +37,14 @@ public class MongoRepository<T> extends AbstractRepository<T> {
 
     @Override
     public void save(T obj, SourceKey key) {
-        try {
-            Map<String, Object> fields = new HashMap<>();
+        Map<String, Object> fields = new HashMap<>();
 
-            mapper.toMap(obj).forEach((k, v) -> fields.put(k, v.getValue()));
-            collection.replaceOne(Filters.eq("_id", key.getKey()), new Document(fields), new ReplaceOptions().upsert(true));
-        } catch (SerializationException e) {
-            e.printStackTrace();
-        }
+        mapper.toMap(obj).forEach((k, v) -> fields.put(k, v.getValue()));
+        collection.replaceOne(Filters.eq("_id", key.getKey()), new Document(fields), new ReplaceOptions().upsert(true));
     }
 
     @Override
-    public int delete(SourceKey key) {
+    public int delete(SourceKey key) throws IllegalArgumentException {
         BasicDBObject bson = new BasicDBObject("_id", key.getKey());
         DeleteResult deleteResult = collection.deleteOne(bson);
 

@@ -8,7 +8,6 @@ import com.github.imthenico.simplecommons.data.db.sql.query.QueryResult;
 import com.github.imthenico.simplecommons.data.key.SimpleSourceKey;
 import com.github.imthenico.simplecommons.data.key.SourceKey;
 import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
-import com.github.imthenico.simplecommons.data.repository.exception.UnknownTargetException;
 import com.github.imthenico.simplecommons.data.repository.service.AbstractSQLSavingService;
 import com.github.imthenico.simplecommons.data.repository.service.MySQLSavingService;
 import com.github.imthenico.simplecommons.data.repository.service.SavingService;
@@ -62,7 +61,7 @@ public class SQLRepository<T> extends AbstractRepository<T> {
     }
 
     @Override
-    public int delete(SourceKey key) throws UnknownTargetException {
+    public int delete(SourceKey key) throws IllegalArgumentException {
         return executeUpdate(
                 QueryBuilder.create("DELETE FROM <t> WHERE(<p>)")
                         .table(sqlTableModel.getName())
