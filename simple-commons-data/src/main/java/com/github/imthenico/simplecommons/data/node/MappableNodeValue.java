@@ -85,7 +85,7 @@ public class MappableNodeValue implements Mappable, NodeValue {
         Optional<TreeNode> optionalNode = value.getAsNode();
 
         if (optionalValue.isPresent()) {
-            toSerialize = optionalValue.get();
+            toSerialize = optionalValue.get().getValue();
         } else if (optionalNode.isPresent()) {
             toSerialize = optionalNode.get();
         }
