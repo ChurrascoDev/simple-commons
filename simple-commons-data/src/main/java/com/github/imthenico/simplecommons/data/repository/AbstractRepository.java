@@ -17,7 +17,7 @@ public abstract class AbstractRepository<T> implements SavingService<T>, Deletio
     protected final Executor taskProcessor;
     protected final Class<T> modelClass;
 
-    AbstractRepository(
+    public AbstractRepository(
             Executor taskProcessor,
             Class<T> modelClass
     ) {
