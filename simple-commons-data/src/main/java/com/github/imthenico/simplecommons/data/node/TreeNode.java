@@ -5,6 +5,7 @@ import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValue;
 import com.github.imthenico.simplecommons.util.Validate;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,7 +13,28 @@ import java.util.function.BiConsumer;
 
 public interface TreeNode {
 
+    FindResult find(String targetPath);
+
+    FindResult all();
+
+    @Deprecated
     NodeValue get(String path);
+
+    String getString(String path);
+
+    int getInt(String path);
+
+    int getDouble(String path);
+
+    long getLong(String path);
+
+    byte getByte(String path);
+
+    float getFloat(String path);
+
+    boolean getBoolean(String path);
+
+    <T> List<T> getList(String path);
 
     void set(String path, Object value);
 

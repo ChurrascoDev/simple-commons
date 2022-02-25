@@ -15,4 +15,11 @@ public class AdapterNode extends DelegatedNode {
     public MappableNodeValue prepareForMap(String path) {
         return new MappableNodeValue(get(path), mapper);
     }
+
+    @Override
+    public MappableFindResult find(String targetPath) {
+        FindResult findResult = super.find(targetPath);
+
+        return new MappableFindResult(findResult.internalCopy(), mapper);
+    }
 }
