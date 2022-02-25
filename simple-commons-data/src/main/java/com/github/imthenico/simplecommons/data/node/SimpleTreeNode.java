@@ -7,6 +7,7 @@ import com.github.imthenico.simplecommons.value.*;
 
 import java.util.*;
 
+@SuppressWarnings("deprecation")
 public class SimpleTreeNode implements TreeNode {
 
     private final Map<String, NodeValue> valueMap;
@@ -37,7 +38,7 @@ public class SimpleTreeNode implements TreeNode {
 
     @Override
     public FindResult all() {
-        return null;
+        return new FindResultImpl(Collections.singletonList(new SimpleNodeValue(this)));
     }
 
     @Override
