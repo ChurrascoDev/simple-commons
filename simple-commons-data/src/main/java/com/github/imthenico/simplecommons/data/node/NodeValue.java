@@ -4,6 +4,7 @@ import com.github.imthenico.simplecommons.value.AbstractValue;
 
 import java.util.Optional;
 
+@Deprecated
 public interface NodeValue {
 
     Optional<TreeNode> getAsNode();

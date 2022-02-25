@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>simple-commons-bukkit</artifactId>
+    <version>0.1.0</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -35,6 +36,13 @@
             <groupId>com.github.imthenico</groupId>
             <artifactId>simple-commons-universal</artifactId>
             <version>0.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.imthenico</groupId>
+            <artifactId>simple-commons-minecraft</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

@@ -7,6 +7,7 @@ import com.github.imthenico.simplecommons.value.*;
 
 import java.util.*;
 
+@SuppressWarnings("deprecation")
 public class SimpleTreeNode implements TreeNode {
 
     private final Map<String, NodeValue> valueMap;
@@ -20,6 +21,24 @@ public class SimpleTreeNode implements TreeNode {
         this.parent = parent;
         this.root = root;
         this.valueMap = new LinkedHashMap<>();
+    }
+
+    @Override
+    public FindResult find(String targetPath) {
+        NodeValue found = get(targetPath);
+
+        if (found.isNull())
+            return new FindResultImpl(Collections.emptyList());
+
+        if (found.getAsArray().isPresent())
+            return new FindResultImpl(found.getAsArray().get());
+
+        return new FindResultImpl(Collections.singletonList(found));
+    }
+
+    @Override
+    public FindResult all() {
+        return new FindResultImpl(Collections.singletonList(new SimpleNodeValue(this)));
     }
 
     @Override
@@ -43,6 +62,46 @@ public class SimpleTreeNode implements TreeNode {
         }
 
         return Validate.defIfNull(value, SimpleNodeValue.EMPTY);
+    }
+
+    @Override
+    public String getString(String path) {
+        return find(path).getOrDefault(0, null);
+    }
+
+    @Override
+    public int getInt(String path) {
+        return find(path).getOrDefault(0, 0);
+    }
+
+    @Override
+    public int getDouble(String path) {
+        return find(path).getOrDefault(0, 0);
+    }
+
+    @Override
+    public long getLong(String path) {
+        return find(path).getOrDefault(0, 0);
+    }
+
+    @Override
+    public byte getByte(String path) {
+        return find(path).getOrDefault(0, (byte) 0);
+    }
+
+    @Override
+    public float getFloat(String path) {
+        return find(path).getOrDefault(0, 0);
+    }
+
+    @Override
+    public boolean getBoolean(String path) {
+        return find(path).getOrDefault(0, false);
+    }
+
+    @Override
+    public <T> List<T> getList(String path) {
+        return find(path).toList();
     }
 
     @Override

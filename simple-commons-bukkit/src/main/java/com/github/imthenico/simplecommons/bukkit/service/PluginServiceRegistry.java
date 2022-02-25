@@ -1,9 +1,13 @@
 package com.github.imthenico.simplecommons.bukkit.service;
 
-public interface PluginServiceRegistry extends Iterable<RunnablePluginService> {
+import java.util.Map;
 
-    <T extends RunnablePluginService> T getService(String name);
+public interface PluginServiceRegistry {
 
-    void loadService(String name, RunnablePluginService service) throws IllegalArgumentException;
+    <T extends RunnablePluginService> T getService(Class<T> serviceClass);
+
+    void loadService(AbstractPluginService service) throws IllegalArgumentException;
+
+    Map<Class<?>, RunnablePluginService> getActiveServices();
 
 }

@@ -3,10 +3,6 @@ package com.github.imthenico.simplecommons.data.repository;
 import com.github.imthenico.simplecommons.data.key.SimpleSourceKey;
 import com.github.imthenico.simplecommons.data.key.SourceKey;
 import com.github.imthenico.simplecommons.data.mapper.GenericMapper;
-import com.github.imthenico.simplecommons.data.repository.exception.ReadException;
-import com.github.imthenico.simplecommons.data.repository.exception.SerializationException;
-import com.github.imthenico.simplecommons.data.repository.exception.UnknownTargetException;
-import com.github.imthenico.simplecommons.data.repository.exception.WriteException;
 import com.github.imthenico.simplecommons.data.util.FileUtils;
 import com.github.imthenico.simplecommons.util.Validate;
 
@@ -48,21 +44,17 @@ public class FileRepository<T> extends AbstractRepository<T> {
     public void save(T obj, SourceKey key) {
         File found = findFile(key, true);
 
-        try {
-            String content = mapper.serialize(obj);
+        String content = mapper.serialize(obj);
 
-            try {
-                write(found, content);
-            } catch (WriteException e) {
-                e.printStackTrace();
-            }
-        } catch (SerializationException e) {
-            throw new RuntimeException(e);
+        try {
+            write(found, content);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public int delete(SourceKey key) throws UnknownTargetException {
+    public int delete(SourceKey key) {
         File found = findFile(key, false);
 
         if (!found.exists())
@@ -81,7 +73,13 @@ public class FileRepository<T> extends AbstractRepository<T> {
         if (!found.exists())
             return null;
 
-        return map(found);
+        try {
+            return map(found);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override
@@ -89,8 +87,14 @@ public class FileRepository<T> extends AbstractRepository<T> {
         Set<T> all = new HashSet<>();
 
         forEachFile(folder, file -> {
-            if (file.isFile()) {
+            if (!file.isFile()) {
+                return;
+            }
+
+            try {
                 all.add(map(file));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
 
@@ -127,7 +131,7 @@ public class FileRepository<T> extends AbstractRepository<T> {
     private File findFile(SourceKey key, boolean create) {
         String fileName = key.getKey();
 
-        if (fileName.endsWith(fileExtension)) {
+        if (!fileName.endsWith(fileExtension)) {
             fileName += fileExtension;
         }
 
@@ -147,34 +151,16 @@ public class FileRepository<T> extends AbstractRepository<T> {
         return found;
     }
 
-    public String read(File toRead) throws ReadException {
-        try {
-            return FileUtils.readTextFile(toRead);
-        } catch (IOException e) {
-            throw new ReadException(e);
-        }
+    public String read(File toRead) throws IOException {
+        return FileUtils.readTextFile(toRead);
     }
 
-    public void write(File source, String data) throws WriteException {
-        try {
-            FileUtils.setTextContent(source, data);
-        } catch (IOException e) {
-            throw new WriteException(e);
-        }
+    public void write(File source, String data) throws IOException {
+        FileUtils.setTextContent(source, data);
     }
 
-    private String raw(File file) {
-        try {
-            return read(file);
-        } catch (ReadException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private T map(File file) {
-        return mapper.map(raw(file), modelClass);
+    private T map(File file) throws IOException {
+        return mapper.map(read(file), modelClass);
     }
 
     private boolean isApt(File file) {

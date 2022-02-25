@@ -5,6 +5,7 @@ import com.github.imthenico.simplecommons.data.node.value.SimpleNodeValue;
 import com.github.imthenico.simplecommons.util.Validate;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,7 +13,28 @@ import java.util.function.BiConsumer;
 
 public interface TreeNode {
 
+    FindResult find(String targetPath);
+
+    FindResult all();
+
+    @Deprecated
     NodeValue get(String path);
+
+    String getString(String path);
+
+    int getInt(String path);
+
+    int getDouble(String path);
+
+    long getLong(String path);
+
+    byte getByte(String path);
+
+    float getFloat(String path);
+
+    boolean getBoolean(String path);
+
+    <T> List<T> getList(String path);
 
     void set(String path, Object value);
 
@@ -60,6 +82,14 @@ public interface TreeNode {
         return copy;
     }
 
+    static AdapterNode createAdapterNode(GenericMapper<String> mapper) {
+        return new AdapterNode(create(), mapper);
+    }
+
+    static AdapterNode adapterNode(GenericMapper<String> mapper, TreeNode delegate) {
+        return new AdapterNode(delegate, mapper);
+    }
+
     static TreeNode load(
             GenericMapper<String> mapper,
             File file
@@ -71,16 +101,16 @@ public interface TreeNode {
             GenericMapper<String> mapper,
             Reader reader
     ) throws IOException {
-        BufferedReader bufferedReader = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
+       try (BufferedReader bufferedReader = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader)) {
+           StringBuilder stringBuilder = new StringBuilder();
 
-        StringBuilder stringBuilder = new StringBuilder();
+           String line;
 
-        String line;
+           while ((line = bufferedReader.readLine()) != null) {
+               stringBuilder.append(line);
+           }
 
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
-        }
-
-        return mapper.map(stringBuilder.toString(), TreeNode.class);
+           return mapper.map(stringBuilder.toString(), TreeNode.class);
+       }
     }
 }
